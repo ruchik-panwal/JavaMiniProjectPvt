@@ -1,101 +1,43 @@
-package com.bloodBank.model; // Corrected package name
+package com.bloodBank.model;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Donor implements Serializable {
+// Donor now EXTENDS Person
+public class Donor extends Person {
 
-    private static final long serialVersionUID = 3L;
+    // Keep its own serialVersionUID
+    private static final long serialVersionUID = 3L; 
+
+    // --- Donor-specific fields ---
     private static int nextId = 1;
-
-    private int donorId; // The new serial number field for each donor
-    private String firstName;
-    private String lastName;
-    private String fatherName;
-    private String motherName;
-    private LocalDate dob;
-    private String mobileNo;
-    private String gender;
-    private String email;
-    private String city;
-    private String fullAddress;
-    private String bloodGroup;
+    private int donorId;
 
     public Donor(String firstName, String lastName, String fatherName, String motherName,
-            LocalDate dob, String mobileNo, String gender, String email,
-            String bloodGroup, String city, String fullAddress) {
+                 LocalDate dob, String mobileNo, String gender, String email,
+                 String bloodGroup, String city, String fullAddress) {
 
-        // Assign the current 'nextId' to this donor, then increment 'nextId'
+        // 1. Call the PARENT (Person) constructor with all the shared info
+        super(firstName, lastName, fatherName, motherName, dob, mobileNo, 
+              gender, email, bloodGroup, city, fullAddress);
+
+        // 2. Set the DONOR-specific info
         this.donorId = nextId++;
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.fatherName = fatherName;
-        this.motherName = motherName;
-        this.dob = dob;
-        this.mobileNo = mobileNo;
-        this.gender = gender;
-        this.email = email;
-        this.bloodGroup = bloodGroup;
-        this.city = city;
-        this.fullAddress = fullAddress;
     }
+
+    // --- Donor-specific methods ---
 
     public int getDonorId() {
         return donorId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getFatherName() {
-        return fatherName;
-    }
-
-    public String getMotherName() {
-        return motherName;
-    }
-
-    public LocalDate getDob() {
-        return dob;
-    }
-
-    public String getMobileNo() {
-        return mobileNo;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public String getFullAddress() {
-        return fullAddress;
-    }
-
-    public String getBloodGroup() {
-        return bloodGroup;
     }
 
     public static void setNextId(int id) {
         nextId = id;
     }
 
+    @Override
     public String toString() {
-        String fullName = firstName + " " + lastName;
-        // Updated format to include the new donorId
-        return String.format("%-4d | %-20s | Blood Group: %s", donorId, fullName, bloodGroup);
+        String fullName = getFirstName() + " " + getLastName();
+        return String.format("%-4d | %-20s | Blood Group: %s", 
+                             donorId, fullName, getBloodGroup());
     }
 }
