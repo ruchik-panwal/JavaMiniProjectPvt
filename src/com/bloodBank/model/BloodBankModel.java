@@ -1,18 +1,21 @@
 // File: src/com/bloodBank/model/BloodBankModel.java
 package com.bloodBank.model;
 
+// Importing File Handlers
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+// General Utils
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BloodBankModel {
 
-    private static final String dataFile = "donors.dat";
-    private ArrayList<Donor> donorList;
+    private static final String dataFile = "donors.dat"; // File where data is stored
+    private ArrayList<Donor> donorList; // List of Donors
 
     public BloodBankModel() {
         this.donorList = loadData();
@@ -67,13 +70,16 @@ public class BloodBankModel {
         return stock;
     }
 
+
+    // Loads the Data from the file
     @SuppressWarnings("unchecked")
     private ArrayList<Donor> loadData() {
 
-        ArrayList<Donor> list = new ArrayList<>();
+        ArrayList<Donor> donorInpList = new ArrayList<>();
 
+        // Takes Data from "donor.dat" and stores in donorList
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dataFile))) {
-            list = (ArrayList<Donor>) ois.readObject();
+            donorInpList = (ArrayList<Donor>) ois.readObject();
             System.out.println("Data loaded successfully.");
         } catch (java.io.FileNotFoundException e) {
             System.out.println("No save file found. Starting fresh.");
@@ -82,18 +88,19 @@ public class BloodBankModel {
         }
 
         // Logic to set the next Donor ID
-        if (!list.isEmpty()) {
+        if (!donorInpList.isEmpty()) {
             int maxId = 0;
-            for (Donor d : list) {
+            for (Donor d : donorInpList) {
                 if (d.getDonorId() > maxId) {
                     maxId = d.getDonorId();
                 }
             }
             Donor.setNextId(maxId + 1);
         }
-        return list;
+        return donorInpList;
     }
 
+    // Stores the data to the file
     private void saveData() {
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dataFile))) {
