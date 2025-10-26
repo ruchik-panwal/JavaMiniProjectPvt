@@ -2,12 +2,15 @@
 package com.bloodBank.controller;
 
 import com.bloodBank.model.BloodBankModel;
+import com.bloodBank.model.Donor;
 import com.bloodBank.view.DashboardView;
+import com.bloodBank.view.DonorInfoView;
 import com.bloodBank.view.AddDonorView;
 import com.bloodBank.view.BloodStockView; // NEW Import
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.Map; // NEW Import
 
 public class DashboardController {
@@ -23,13 +26,13 @@ public class DashboardController {
         this.view.addAddDonorListener(new AddButtonListener());
         this.view.addRemoveDonorListener(new RemoveButtonListener());
         this.view.addViewBloodStockListener(new ViewStockButtonListener());
+        this.view.addViewAllDonorsListener(new ViewAllDonorsListener());
     }
 
-    
     class AddButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            AddDonorView addView = new AddDonorView(view); 
+            AddDonorView addView = new AddDonorView(view);
 
             // The callback is now just an empty function
             new AddDonorController(model, addView, new Runnable() {
@@ -66,21 +69,41 @@ public class DashboardController {
             }
         }
     }
-    
+
     class ViewStockButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             // 1. Create the new view
             BloodStockView stockView = new BloodStockView(view);
-            
+
             // 2. Get the data from the model
             Map<String, Integer> stock = model.getBloodStock();
-            
+
             // 3. Create a controller for the new view
             new BloodStockController(stockView, stock);
-            
+
             // 4. Show the view
             stockView.setVisible(true);
+        }
+    }
+
+    class ViewAllDonorsListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            // 1. Get the list of all donors from the model
+            // (You must add a getAllDonors() method to your BloodBankModel)
+            List<Donor> allDonors = model.getDonors();
+
+            // 2. Create the pop-up window (the view)
+            // We pass 'view' (the main DashboardView) so the pop-up appears on top.
+            DonorInfoView infoView = new DonorInfoView(view);
+
+            // 3. Give the data to the view, which will build the table
+            infoView.displayDonors(allDonors);
+
+            // 4. Show the pop-up window
+            infoView.setVisible(true);
         }
     }
 }

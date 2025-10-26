@@ -13,6 +13,7 @@ public class DashboardView extends JFrame {
     private JButton addDonorButton;
     private JButton removeDonorButton;
     private JButton viewBloodStockButton;
+    private JButton viewDonorsButton;
 
     // Constructor
     public DashboardView() {
@@ -49,11 +50,13 @@ public class DashboardView extends JFrame {
         addDonorButton = new ModernButton("Add New Donor", new Color(125, 194, 93)); // A green color
         removeDonorButton = new ModernButton("Remove Donor by ID", new Color(184, 77, 75)); // A red color
         viewBloodStockButton = new ModernButton("View Blood Stock", new Color(65, 141, 176)); // A blue color
+        viewDonorsButton = new ModernButton("View Donors", new Color(65, 141, 176)); // A blue color
 
         // adding to the panel
         buttonPanel.add(addDonorButton);
         buttonPanel.add(removeDonorButton);
         buttonPanel.add(viewBloodStockButton);
+        buttonPanel.add(viewDonorsButton);
 
         // Took a wrapper for sizing change
         JPanel wrapperPanel = new JPanel();
@@ -72,6 +75,10 @@ public class DashboardView extends JFrame {
 
     public void addViewBloodStockListener(ActionListener listener) {
         viewBloodStockButton.addActionListener(listener);
+    }
+
+    public void addViewAllDonorsListener(ActionListener listener) {
+        viewDonorsButton.addActionListener(listener);
     }
     
     public String showIDInputDialog(String message) {
