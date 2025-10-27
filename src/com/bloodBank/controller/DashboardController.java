@@ -2,6 +2,7 @@
 package com.bloodBank.controller;
 
 import com.bloodBank.model.BloodBankModel;
+import com.bloodBank.model.BloodUnit;
 import com.bloodBank.model.Donor;
 import com.bloodBank.view.DashboardView;
 import com.bloodBank.view.DonorInfoView;
@@ -10,8 +11,8 @@ import com.bloodBank.view.BloodStockView; // NEW Import
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map; // NEW Import
 
 public class DashboardController {
 
@@ -74,13 +75,15 @@ public class DashboardController {
         @Override
         public void actionPerformed(ActionEvent e) {
             // 1. Create the new view
-            BloodStockView stockView = new BloodStockView(view);
+            BloodStockView stockView = new BloodStockView(view); // 'view' is your main JFrame
 
-            // 2. Get the data from the model
-            Map<String, Integer> stock = model.getBloodStock();
+            // 2. Get the NEW data from the model
+            // --- MODIFICATION ---
+            ArrayList<BloodUnit> allUnits = model.getBloodUnits();
 
             // 3. Create a controller for the new view
-            new BloodStockController(stockView, stock);
+            // --- MODIFICATION ---
+            new BloodStockController(stockView, allUnits);
 
             // 4. Show the view
             stockView.setVisible(true);

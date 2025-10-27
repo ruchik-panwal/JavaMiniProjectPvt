@@ -2,16 +2,21 @@
 package com.bloodBank.controller;
 
 import com.bloodBank.view.BloodStockView;
-import java.util.Map;
+import com.bloodBank.model.BloodUnit; // <-- CHANGED: Import BloodUnit
+import java.util.ArrayList; // <-- CHANGED: Import ArrayList (removed Map)
 
 public class BloodStockController {
 
     /**
      * This controller is very simple. It doesn't need to listen for any events.
-     * It just takes the data and passes it to the view.
+     * It just takes the data (now a list of units) and passes it to the view.
      */
-    public BloodStockController(BloodStockView view, Map<String, Integer> stockData) {
+    
+    // --- MODIFICATION: Changed Map<String, Integer> to ArrayList<BloodUnit> ---
+    public BloodStockController(BloodStockView view, ArrayList<BloodUnit> unitData) {
+        
         // Immediately tell the view to display the data
-        view.displayStock(stockData);
+        // --- MODIFICATION: Pass the unitData list to the view ---
+        view.displayStock(unitData);
     }
 }
