@@ -4,15 +4,17 @@ package com.bloodBank.controller;
 import com.bloodBank.model.BloodBankModel;
 import com.bloodBank.model.BloodUnit;
 import com.bloodBank.model.Donor;
+import com.bloodBank.model.Recipient; // <-- NEW Import
 import com.bloodBank.view.DashboardView;
 import com.bloodBank.view.DonorInfoView;
 import com.bloodBank.view.AddDonorView;
-import com.bloodBank.view.BloodStockView; // NEW Import
+import com.bloodBank.view.BloodStockView;
+import com.bloodBank.view.AddRecipientView; // <-- NEW Import
+import com.bloodBank.view.RecipientInfoView; // <-- NEW Import
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DashboardController {
 
@@ -23,34 +25,44 @@ public class DashboardController {
         this.model = model;
         this.view = view;
 
-        // Add listeners for the new dashboard buttons
-        this.view.addAddDonorListener(new AddButtonListener());
-        this.view.addRemoveDonorListener(new RemoveButtonListener());
-        this.view.addViewBloodStockListener(new ViewStockButtonListener());
+        // --- Donor Listeners ---
+        this.view.addAddDonorListener(new AddDonorButtonListener());
+        this.view.addRemoveDonorListener(new RemoveDonorButtonListener());
         this.view.addViewAllDonorsListener(new ViewAllDonorsListener());
+        
+        // --- Stock Listener ---
+        this.view.addViewBloodStockListener(new ViewStockButtonListener());
+
+        // --- NEW Recipient Listeners ---
+        this.view.addAddRecipientListener(new AddRecipientButtonListener());
+        this.view.addRemoveRecipientListener(new RemoveRecipientButtonListener());
+        this.view.addViewAllRecipientsListener(new ViewAllRecipientsListener());
     }
 
-    class AddButtonListener implements ActionListener {
+    // --- Donor Listener Classes ---
+
+    class AddDonorButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             AddDonorView addView = new AddDonorView(view);
 
-            // The callback is now just an empty function
+            // Create a callback to run on success (e.g., refresh a table)
             new AddDonorController(model, addView, new Runnable() {
                 @Override
                 public void run() {
+                    // This is where you would refresh the main donor table if you had one
+                    System.out.println("Donor added, callback executed.");
                 }
             });
-
             addView.setVisible(true);
         }
     }
 
-    class RemoveButtonListener implements ActionListener {
+    class RemoveDonorButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             // 1. Ask user for the ID
-            String idString = view.showIDInputDialog("Enter the ID of the donor to remove:");
+            String idString = view.showDonorIDInputDialog("Enter the ID of the donor to remove:");
 
             if (idString == null || idString.trim().isEmpty()) {
                 return;
@@ -62,6 +74,7 @@ public class DashboardController {
 
                 if (success) {
                     view.showInfoMessage("Donor with ID " + id + " has been removed.");
+                    // You would refresh your main donor table here
                 } else {
                     view.showErrorMessage("No donor found with ID " + id + ".");
                 }
@@ -70,40 +83,94 @@ public class DashboardController {
             }
         }
     }
-
-    class ViewStockButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            // 1. Create the new view
-            BloodStockView stockView = new BloodStockView(view); // 'view' is your main JFrame
-
-            // 2. Get the NEW data from the model
-            // --- MODIFICATION ---
-            ArrayList<BloodUnit> allUnits = model.getBloodUnits();
-
-            // 3. Create a controller for the new view
-            // --- MODIFICATION ---
-            new BloodStockController(stockView, allUnits);
-
-            // 4. Show the view
-            stockView.setVisible(true);
-        }
-    }
-
+    
     class ViewAllDonorsListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
             // 1. Get the list of all donors from the model
-            // (You must add a getAllDonors() method to your BloodBankModel)
-            List<Donor> allDonors = model.getDonors();
+            ArrayList<Donor> allDonors = model.getDonors();
 
             // 2. Create the pop-up window (the view)
-            // We pass 'view' (the main DashboardView) so the pop-up appears on top.
             DonorInfoView infoView = new DonorInfoView(view);
 
             // 3. Give the data to the view, which will build the table
             infoView.displayDonors(allDonors);
+
+            // 4. Show the pop-up window
+            infoView.setVisible(true);
+        }
+    }
+
+    // --- Stock Listener Class ---
+
+    class ViewStockButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            BloodStockView stockView = new BloodStockView(view);
+            ArrayList<BloodUnit> allUnits = model.getBloodUnits();
+            new BloodStockController(stockView, allUnits);
+            stockView.setVisible(true);
+        }
+    }
+
+    // --- NEW Recipient Listener Classes ---
+
+    class AddRecipientButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            AddRecipientView addView = new AddRecipientView(view);
+
+            // Create a callback to run on success
+            new AddRecipientController(model, addView, new Runnable() {
+                @Override
+                public void run() {
+                    // This is where you would refresh the main recipient table
+                    System.out.println("Recipient added, callback executed.");
+                }
+            });
+            addView.setVisible(true);
+        }
+    }
+
+    class RemoveRecipientButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // 1. Ask user for the ID
+            String idString = view.showRecipientIDInputDialog("Enter the ID of the recipient to remove:");
+
+            if (idString == null || idString.trim().isEmpty()) {
+                return;
+            }
+
+            try {
+                int id = Integer.parseInt(idString.trim());
+                boolean success = model.deleteRecipientById(id); // <-- Calls new model method
+
+                if (success) {
+                    view.showInfoMessage("Recipient with ID " + id + " has been removed.");
+                    // You would refresh your main recipient table here
+                } else {
+                    view.showErrorMessage("No recipient found with ID " + id + ".");
+                }
+            } catch (NumberFormatException ex) {
+                view.showErrorMessage("Invalid ID. Please enter a number.");
+            }
+        }
+    }
+
+    class ViewAllRecipientsListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // 1. Get the list of all recipients from the model
+            ArrayList<Recipient> allRecipients = model.getRecipients(); // <-- Calls new model method
+
+            // 2. Create the pop-up window (the view)
+            // (Assumes you have created RecipientInfoView similar to DonorInfoView)
+            RecipientInfoView infoView = new RecipientInfoView(view);
+
+            // 3. Give the data to the view, which will build the table
+            // (Assumes RecipientInfoView has a 'displayRecipients' method)
+            infoView.displayRecipients(allRecipients);
 
             // 4. Show the pop-up window
             infoView.setVisible(true);

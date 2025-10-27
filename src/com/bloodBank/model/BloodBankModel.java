@@ -18,13 +18,17 @@ public class BloodBankModel {
     // Files where data is stored
     private static final String donorFile = "donors.dat";
     private static final String bloodUnitFile = "bloodUnits.dat";
+    private static final String recipientFile = "recipients.dat"; // <-- NEW
 
     private ArrayList<Donor> donorList; // List of Donors
     private ArrayList<BloodUnit> bloodUnitList; // List of Blood Units
+    private ArrayList<Recipient> recipientList; // <-- NEW
 
     public BloodBankModel() {
         this.donorList = loadDonorData();
         this.bloodUnitList = loadBloodUnitData();
+        this.recipientList = loadRecipientData(); // <-- NEW
+        
         // Update statuses on load (e.g., mark newly expired units)
         updateUnitStatuses();
     }
@@ -39,9 +43,7 @@ public class BloodBankModel {
         this.donorList.add(donor);
         saveDonorData();
 
-        // --- NEW LOGIC ---
         // Automatically create and add the associated blood unit
-        // for this new donation.
         BloodUnit newUnit = new BloodUnit(donor.getDonorId(), donor.getBloodGroup());
         this.addBloodUnit(newUnit); // Use our existing method to add and save the unit
     }
@@ -66,39 +68,62 @@ public class BloodBankModel {
         return false; // Donor not found
     }
 
+    // --- Recipient Methods --- // <-- NEW SECTION
+
+    /**
+     * Gets a copy of the current recipient list.
+     * @return A new ArrayList of Recipient objects.
+     */
+    public ArrayList<Recipient> getRecipients() {
+        return new ArrayList<>(this.recipientList);
+    }
+
+    /**
+     * Adds a new recipient to the list and saves to file.
+     * @param recipient The Recipient object to add.
+     */
+    public void addRecipient(Recipient recipient) {
+        this.recipientList.add(recipient);
+        saveRecipientData();
+    }
+
+    /**
+     * Deletes a recipient from the list by their ID.
+     * @param id The ID of the recipient to remove.
+     * @return true if a recipient was found and removed, false otherwise.
+     */
+    public boolean deleteRecipientById(int id) {
+        Recipient recipientToRemove = recipientList.stream()
+                .filter(r -> r.getRecipientId() == id)
+                .findFirst()
+                .orElse(null);
+
+        if (recipientToRemove != null) {
+            recipientList.remove(recipientToRemove);
+            saveRecipientData();
+            return true; // Success
+        }
+        return false; // Recipient not found
+    }
+
     // --- Blood Unit Methods ---
 
     public ArrayList<BloodUnit> getBloodUnits() {
         return new ArrayList<>(this.bloodUnitList);
     }
 
-    /**
-     * Adds a new BloodUnit and saves the list.
-     * The unit should be created by the Controller.
-     * 
-     * @param unit The BloodUnit to add.
-     */
     public void addBloodUnit(BloodUnit unit) {
         this.bloodUnitList.add(unit);
         saveBloodUnitData();
     }
 
-    /**
-     * Gets a map of all available blood units, grouped by blood type.
-     * This now provides an accurate count of available stock.
-     * * @return A Map where the key is the blood group (e.g., "A+") and
-     * the value is the count of IN_STOCK units.
-     */
     public Map<String, Integer> getBloodStock() {
+        // ... (method unchanged)
         Map<String, Integer> stock = new HashMap<>();
-
-        // Initialize all common blood types to 0 for a complete report
         String[] bloodTypes = { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
         for (String type : bloodTypes) {
             stock.put(type, 0);
         }
-
-        // Count only units that are currently IN_STOCK
         for (BloodUnit unit : bloodUnitList) {
             if (unit.getStatus() == BloodStatus.IN_STOCK) {
                 String bloodGroup = unit.getBloodGroup().toUpperCase().trim();
@@ -108,56 +133,39 @@ public class BloodBankModel {
         return stock;
     }
 
-    /**
-     * Finds all blood units that are IN_STOCK and expiring soon.
-     * 
-     * @return A list of BloodUnit objects.
-     */
     public ArrayList<BloodUnit> getUnitsExpiringSoon() {
-        // Use Java 8 Stream API for a clean filter
+        // ... (method unchanged)
         return bloodUnitList.stream()
                 .filter(unit -> unit.isExpiringSoon())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    /**
-     * Marks a specific blood unit as USED.
-     * 
-     * @param unitId The ID of the unit to be used.
-     * @return true if the unit was found, was IN_STOCK, and was updated. false
-     *         otherwise.
-     */
     public boolean useBloodUnit(int unitId) {
+        // ... (method unchanged)
         for (BloodUnit unit : bloodUnitList) {
             if (unit.getUnitId() == unitId) {
                 if (unit.getStatus() == BloodStatus.IN_STOCK) {
                     unit.setStatus(BloodStatus.ISSUED);
                     saveBloodUnitData();
-                    return true; // Successfully used
+                    return true;
                 } else {
-                    return false; // Found, but not in stock (e.g., already used or expired)
+                    return false;
                 }
             }
         }
-        return false; // Unit ID not found
+        return false;
     }
 
-    /**
-     * Iterates over all units and updates their status if they have expired.
-     * This is useful to run when the application starts.
-     */
     private void updateUnitStatuses() {
+        // ... (method unchanged)
         boolean dataChanged = false;
         for (BloodUnit unit : bloodUnitList) {
-            // Only check units that are currently marked as IN_STOCK
             if (unit.getStatus() == BloodStatus.IN_STOCK && unit.isExpired()) {
                 unit.setStatus(BloodStatus.EXPIRED);
                 dataChanged = true;
                 System.out.println("Unit " + unit.getUnitId() + " marked as EXPIRED.");
             }
         }
-
-        // If any statuses were changed, save the updated list to the file
         if (dataChanged) {
             saveBloodUnitData();
         }
@@ -167,6 +175,7 @@ public class BloodBankModel {
 
     @SuppressWarnings("unchecked")
     private ArrayList<Donor> loadDonorData() {
+        // ... (method unchanged)
         ArrayList<Donor> donorInpList = new ArrayList<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(donorFile))) {
             donorInpList = (ArrayList<Donor>) ois.readObject();
@@ -185,6 +194,7 @@ public class BloodBankModel {
     }
 
     private void saveDonorData() {
+        // ... (method unchanged)
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(donorFile))) {
             oos.writeObject(this.donorList);
         } catch (Exception e) {
@@ -194,6 +204,7 @@ public class BloodBankModel {
 
     @SuppressWarnings("unchecked")
     private ArrayList<BloodUnit> loadBloodUnitData() {
+        // ... (method unchanged)
         ArrayList<BloodUnit> unitInpList = new ArrayList<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(bloodUnitFile))) {
             unitInpList = (ArrayList<BloodUnit>) ois.readObject();
@@ -212,10 +223,47 @@ public class BloodBankModel {
     }
 
     private void saveBloodUnitData() {
+        // ... (method unchanged)
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(bloodUnitFile))) {
             oos.writeObject(this.bloodUnitList);
         } catch (Exception e) {
             System.out.println("Error saving blood unit data: " + e.getMessage());
+        }
+    }
+
+    // --- NEW METHODS for Recipient Persistence ---
+
+    /**
+     * Loads the Recipient Data from the file.
+     */
+    @SuppressWarnings("unchecked")
+    private ArrayList<Recipient> loadRecipientData() {
+        ArrayList<Recipient> recipientInpList = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(recipientFile))) {
+            recipientInpList = (ArrayList<Recipient>) ois.readObject();
+            System.out.println("Recipient data loaded successfully.");
+        } catch (java.io.FileNotFoundException e) {
+            System.out.println("No recipient save file found. Starting fresh.");
+        } catch (Exception e) {
+            System.out.println("Error loading recipient data: " + e.getMessage());
+        }
+
+        // Logic to set the next Recipient ID
+        if (!recipientInpList.isEmpty()) {
+            int maxId = recipientInpList.stream().mapToInt(Recipient::getRecipientId).max().orElse(0);
+            Recipient.setNextId(maxId + 1);
+        }
+        return recipientInpList;
+    }
+
+    /**
+     * Stores the Recipient data to the file.
+     */
+    private void saveRecipientData() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(recipientFile))) {
+            oos.writeObject(this.recipientList);
+        } catch (Exception e) {
+            System.out.println("Error saving recipient data: " + e.getMessage());
         }
     }
 }
