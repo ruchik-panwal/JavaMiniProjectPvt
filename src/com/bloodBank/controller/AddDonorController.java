@@ -3,7 +3,7 @@ package com.bloodBank.controller;
 
 import com.bloodBank.model.BloodBankModel;
 import com.bloodBank.model.Donor;
-import com.bloodBank.view.AddDonorView; // CHANGED
+import com.bloodBank.view.AddDonorView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,8 +61,14 @@ public class AddDonorController {
                         dob, mobileNo, gender, email,
                         bloodGroup, city, fullAddress);
 
-                model.addDonor(newDonor);
-                view.showSuccessMessage("Donor added successfully!");
+                // --- MODIFIED LINES ---
+                // 1. Capture the status message from the model
+                String successMessage = model.addDonor(newDonor);
+                
+                // 2. Show the message from the model (e.g., "Auto-issued to...")
+                view.showSuccessMessage(successMessage);
+                // --- END OF MODIFICATIONS ---
+
                 view.dispose();
 
                 // Run the callback function to tell the dashboard to refresh

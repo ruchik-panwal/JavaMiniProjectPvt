@@ -77,12 +77,17 @@ public class BloodBankController {
                         bloodGroup, city, fullAddress
                 );
                 
-                model.addDonor(newDonor); // The model handles the saving
+                // --- MODIFIED LINES ---
+                // 1. Capture the status message from the model
+                String successMessage = model.addDonor(newDonor); // The model handles the saving
 
                 // 5. Update View
                 updateView(); // Re-fetch all data and display it
                 view.clearInputFields(); // Assumes this method now clears all new fields
-                view.showSuccessMessage("Donor added successfully!");
+                
+                // 2. Show the specific message from the model
+                view.showSuccessMessage(successMessage);
+                // --- END OF MODIFICATIONS ---
 
             } catch (Exception ex) {
                 // General catch block for any other unexpected errors

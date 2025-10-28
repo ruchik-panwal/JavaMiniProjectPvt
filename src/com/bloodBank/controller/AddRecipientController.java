@@ -2,8 +2,8 @@
 package com.bloodBank.controller;
 
 import com.bloodBank.model.BloodBankModel;
-import com.bloodBank.model.Recipient; // <-- CHANGED
-import com.bloodBank.view.AddRecipientView; // <-- CHANGED
+import com.bloodBank.model.Recipient;
+import com.bloodBank.view.AddRecipientView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,19 +13,18 @@ import java.time.format.DateTimeParseException;
 public class AddRecipientController {
 
     private BloodBankModel model;
-    private AddRecipientView view; // <-- CHANGED
+    private AddRecipientView view;
     private Runnable onAddSuccessCallback;
 
-    public AddRecipientController(BloodBankModel model, AddRecipientView view, Runnable onAddSuccessCallback) { // <-- CHANGED
+    public AddRecipientController(BloodBankModel model, AddRecipientView view, Runnable onAddSuccessCallback) {
         this.model = model;
         this.view = view;
         this.onAddSuccessCallback = onAddSuccessCallback;
 
-        // The view's button listener method is named the same
-        this.view.addAddButtonListener(new AddRecipientListener()); // <-- CHANGED
+        this.view.addAddButtonListener(new AddRecipientListener());
     }
 
-    class AddRecipientListener implements ActionListener { // <-- CHANGED
+    class AddRecipientListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
 
@@ -42,7 +41,7 @@ public class AddRecipientController {
                 String bloodGroup = view.getBloodGroup();
                 String city = view.getCity();
                 String fullAddress = view.getFullAddress();
-                String reasonForTransfusion = view.getReasonForTransfusion(); // <-- NEW FIELD
+                String reasonForTransfusion = view.getReasonForTransfusion();
 
                 // 2. Validate essential inputs
                 if (firstName.isEmpty() || lastName.isEmpty() || mobileNo.isEmpty() || bloodGroup.isEmpty()
@@ -60,17 +59,20 @@ public class AddRecipientController {
                 }
 
                 // 4. Create new Recipient object
-                Recipient newRecipient = new Recipient( // <-- CHANGED
+                Recipient newRecipient = new Recipient(
                         firstName, lastName, fatherName, motherName,
                         dob, mobileNo, gender, email,
                         bloodGroup, city, fullAddress,
-                        reasonForTransfusion); // <-- NEW FIELD ADDED
+                        reasonForTransfusion);
 
-                // 5. Add to model
-                model.addRecipient(newRecipient); // <-- CHANGED
+                // --- MODIFIED LINES ---
+                // 5. Call the transaction method and capture the message
+                String resultMessage = model.issueOneUnitToRecipient(newRecipient);
                 
-                // 6. Give feedback and close
-                view.showSuccessMessage("Recipient added successfully!"); // <-- CHANGED
+                // 6. Give feedback (Success, or Waiting List) and close
+                view.showSuccessMessage(resultMessage);
+                // --- END OF MODIFICATIONS ---
+                
                 view.dispose();
 
                 // 7. Run the callback function to tell the dashboard to refresh
@@ -82,7 +84,7 @@ public class AddRecipientController {
             }
         }
 
-        // Funtion to parse date (identical to AddDonorController)
+        // Funtion to parse date
         private LocalDate parseDate(String dateString) {
             try {
                 return LocalDate.parse(dateString);
