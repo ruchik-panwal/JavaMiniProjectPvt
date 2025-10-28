@@ -1,18 +1,26 @@
+// File: src/com/bloodBank/view/DonorInfoView.java
 package com.bloodBank.view;
 
-import com.bloodBank.model.Donor; // Import your Donor class
+import com.bloodBank.model.Donor;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.time.LocalDate; // Import for LocalDate
-import java.util.List; // Import for the List of donors
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * A JDialog (pop-up window) to display a list of ALL donor information.
  */
 public class DonorInfoView extends JDialog {
+
+    // --- NEW: Pastel Color Palette for Aesthetics ---
+    private static final Color PASTEL_BACKGROUND = new Color(245, 247, 249);
+    private static final Color PASTEL_HEADER = new Color(110, 180, 210);
+    private static final Color PASTEL_SELECTION = new Color(220, 235, 240);
+    private static final Color PASTEL_GRID_COLOR = new Color(220, 220, 220);
 
     private JTable donorTable;
     private DefaultTableModel tableModel;
@@ -25,7 +33,7 @@ public class DonorInfoView extends JDialog {
         // --- Dialog Setup ---
         super(owner, "All Donor Information", true);
         
-        // --- MODIFICATION: New column list with all fields ---
+        // --- Column list with all fields ---
         String[] columnNames = {
             "ID", "Full Name", "Blood Group", "Mobile No.", "Email",
             "Gender", "Date of Birth", "City", "Full Address",
@@ -43,31 +51,80 @@ public class DonorInfoView extends JDialog {
         // --- Setup the JTable ---
         donorTable = new JTable(tableModel);
         
-        // --- MODIFICATION: Add this line for horizontal scrolling ---
-        // This is essential for tables with many columns.
-        // It will create a horizontal scrollbar instead of shrinking columns.
+        // Ensure horizontal scrolling and prevent columns from being squashed
         donorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         // --- Modern Look & Feel ---
-        donorTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        donorTable.setRowHeight(28);
-        donorTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 15));
-        donorTable.getTableHeader().setReorderingAllowed(false);
+        
+        // Table cell style
+        donorTable.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        donorTable.setRowHeight(32);
+        donorTable.setGridColor(PASTEL_GRID_COLOR);
+        donorTable.setSelectionBackground(PASTEL_SELECTION);
+        donorTable.setSelectionForeground(Color.BLACK);
+
+        // Table Header Style
+        JTableHeader header = donorTable.getTableHeader();
+        header.setFont(new Font("SansSerif", Font.BOLD, 17));
+        header.setBackground(PASTEL_HEADER);
+        header.setForeground(Color.WHITE);
+        header.setReorderingAllowed(false);
+        header.setPreferredSize(new Dimension(header.getWidth(), 40));
+
+        // --- Apply custom column widths ---
+        setColumnWidths(); 
 
         // --- Setup the Scroll Pane ---
         JScrollPane scrollPane = new JScrollPane(donorTable);
-        // The scroll pane will NOW show both vertical and horizontal scrollbars
-        scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(PASTEL_BACKGROUND);
+        
         // --- Add components to the dialog ---
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- MODIFICATION: Make the dialog wider to show more data ---
-        setSize(1000, 600); // Increased width
+        // --- Window Configuration ---
+        setSize(1920, 1080);
+        getContentPane().setBackground(PASTEL_BACKGROUND);
         
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); 
         setLocationRelativeTo(owner); 
+    }
+
+    /**
+     * NEW: Sets appropriate, fixed widths for all columns.
+     */
+    private void setColumnWidths() {
+        // 0. ID
+        // 1. Full Name
+        // 2. Blood Group
+        // 3. Mobile No.
+        // 4. Email
+        // 5. Gender
+        // 6. Date of Birth
+        // 7. City
+        // 8. Full Address
+        // 9. Father's Name
+        // 10. Mother's Name
+        
+        int[] widths = {
+            60,  // 0. ID (Small)
+            200, // 1. Full Name (Medium)
+            120, // 2. Blood Group (Small)
+            140, // 3. Mobile No.
+            250, // 4. Email (Wide)
+            100, // 5. Gender
+            140, // 6. Date of Birth
+            120, // 7. City
+            350, // 8. Full Address (Extra Wide)
+            180, // 9. Father's Name
+            180  // 10. Mother's Name
+        };
+
+        for (int i = 0; i < widths.length; i++) {
+            TableColumn column = donorTable.getColumnModel().getColumn(i);
+            column.setPreferredWidth(widths[i]);
+        }
     }
 
     /**
@@ -78,9 +135,9 @@ public class DonorInfoView extends JDialog {
         // Clear any old data
         tableModel.setRowCount(0);
         
-        if (donorList == null) return; // Safety check
+        if (donorList == null) return;
 
-        // --- MODIFICATION: Add all fields from the donor object ---
+        // --- Add data from the donor object ---
         for (Donor donor : donorList) {
             // Get all data points from the donor object
             int id = donor.getDonorId();
@@ -89,7 +146,7 @@ public class DonorInfoView extends JDialog {
             String mobileNo = donor.getMobileNo();
             String email = donor.getEmail();
             String gender = donor.getGender();
-            LocalDate dob = donor.getDob(); // Get the date object
+            LocalDate dob = donor.getDob();
             String city = donor.getCity();
             String address = donor.getFullAddress();
             String fatherName = donor.getFatherName();
